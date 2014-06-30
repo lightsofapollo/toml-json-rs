@@ -1,0 +1,16 @@
+[package]
+name = "toml-json"
+version = "0.0.1"
+authors = ["James Lal [:lightsofapollo] <james@lightsofapollo.com>"]
+
+
+[dependencies.toml]
+git = "https://github.com/alexcrichton/toml-rs"
+
+[[bin]]
+path = "src/bin/toml-json.rs"
+name = "toml-json"
+
+[[lib]]
+name = "tomljson"
+path = "src/tomljson/lib.rs"
