@@ -50,8 +50,8 @@ fn main() {
   // create a writer to stdout
   let mut stdout = stdio::stdout();
 
+  // pretty print is default since most humans can't read single line json
   if matches.opt_present("d") {
-    // because most humans like pretty printed
     json.to_writer(&mut stdout);
   } else {
     json.to_pretty_writer(&mut stdout);
