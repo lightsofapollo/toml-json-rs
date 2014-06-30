@@ -1,3 +1,4 @@
+#![crate_id="tomljson"]
 extern crate toml;
 extern crate serialize;
 
