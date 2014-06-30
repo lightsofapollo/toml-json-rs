@@ -6,7 +6,7 @@ use std::{os};
 use std::io::{File, stdio};
 use tomljson::TomlConverter;
 
-static USAGE: &'static str = "Convert a toml file to 2 space indented json file.";
+static USAGE: &'static str = "Convet toml file to json and write it to stdout";
 
 fn show_help(opts: &[getopts::OptGroup]) {
   println!("{}", getopts::usage(USAGE, opts));
@@ -22,6 +22,12 @@ fn main() {
 
   // validate the arguments
   let args = os::args();
+
+  // default action is to show help
+  if (args.len() < 2) {
+    return show_help(opts);
+  }
+
   let matches = match getopts::getopts(args.tail(), opts) {
     Ok(matches) => { matches },
     Err(err) => fail!(err.to_str())
