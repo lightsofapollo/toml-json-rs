@@ -2,9 +2,8 @@ extern crate debug;
 extern crate getopts;
 extern crate tomljson;
 
-use std::collections::TreeMap;
 use std::{os};
-use std::io::{File, stdio, Reader};
+use std::io::{File, stdio};
 use tomljson::TomlConverter;
 
 static USAGE: &'static str = "Convert a toml file to 2 space indented json file.";

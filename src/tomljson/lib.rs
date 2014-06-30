@@ -3,7 +3,7 @@ extern crate serialize;
 
 use std::collections::TreeMap;
 use std::io::{Reader};
-use serialize::json::{ToJson, PrettyEncoder, Json};
+use serialize::json::{ToJson, Json};
 
 use toml::{
   String,
