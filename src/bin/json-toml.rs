@@ -2,10 +2,10 @@ extern crate getopts;
 extern crate tomljson;
 
 use std::{os};
-use std::io::{File, stdio};
-use tomljson::TomlConverter;
+use std::io::{File};
+use tomljson::JsonConverter;
 
-static USAGE: &'static str = "Convert toml file to json and write it to stdout";
+static USAGE: &'static str = "Convert json file to toml and print to stdout";
 
 fn show_help(opts: &[getopts::OptGroup]) {
   println!("{}", getopts::usage(USAGE, opts));
@@ -14,9 +14,7 @@ fn show_help(opts: &[getopts::OptGroup]) {
 fn main() {
   // main options for the cli
   let opts = [
-    getopts::optflag("h", "help", "Show help for toml-js"),
-    getopts::optflag("d", "dense", "Output json as a single line instead a human readable string"),
-
+    getopts::optflag("h", "help", "json-toml"),
   ];
 
   // validate the arguments
@@ -49,22 +47,11 @@ fn main() {
 
   // read from the toml file and convert to json
   let mut reader = File::open(&toml_path).unwrap();
-  let converter = TomlConverter::new();
-  let json = converter.convert(&mut reader);
-
-  // create a writer to stdout
-  let mut stdout = stdio::stdout();
-
-  // pretty print is default since most humans can't read single line json
-  let write = if matches.opt_present("d") {
-    json.to_writer(&mut stdout)
-  } else {
-    json.to_pretty_writer(&mut stdout)
+  let converter = JsonConverter::new();
+  let toml = match converter.convert(&mut reader) {
+    Ok(v) => v,
+    Err(e) => fail!("Failed to convert json to toml: {}", e)
   };
 
-  match write {
-    // if the write was successful great nothing left todo.
-    Ok(_) => return,
-    Err(e) => fail!("Unexpected failure when writing json out {}", e)
-  };
+  println!("{}", toml);
 }
