@@ -1,7 +1,7 @@
 use toml;
-use serialize::json;
-use std::io::{BufferedReader};
-use std::collections::hashmap::HashMap;
+use rustc_serialize::json::{self, Json};
+use std::io::{BufReader, Read};
+use std::collections::BTreeMap;
 
 pub struct JsonConverter;
 impl JsonConverter {
@@ -13,35 +13,38 @@ impl JsonConverter {
     match json {
       // XXX: Should we attempt to be smart and conver some to Float and other
       // to Integer?
-      &json::Number(ref v) => toml::Float(v.clone()),
-      &json::String(ref v) => toml::String(v.clone()),
-      &json::Boolean(ref v) => toml::Boolean(v.clone()),
+      &Json::F64(ref v) => toml::Value::Float(v.clone()),
+      &Json::I64(ref v) => toml::Value::Integer(v.clone()),
+      &Json::U64(ref v) => toml::Value::Integer(v.clone() as i64),
+      &Json::String(ref v) => toml::Value::String(v.clone()),
+      &Json::Boolean(ref v) => toml::Value::Boolean(v.clone()),
       // XXX: What else could this be aside from an empty string?
-      &json::Null => toml::String("".to_string()),
-      &json::List(ref list) => {
+      &Json::Null => toml::Value::String("".to_string()),
+      &Json::Array(ref list) => {
         // Array is Vec<toml::Value>.
         let mut toml_list = Vec::<toml::Value>::new();
         //let mut toml_list = toml::Array::new();
         for json_value in list.iter() {
           toml_list.push(self.convert_json(json_value));
         }
-        toml::Array(toml_list)
+        toml::Value::Array(toml_list)
       },
-      &json::Object(ref obj) => {
+      &Json::Object(ref obj) => {
         //let mut toml_map = toml::Table::new();
-        let mut toml_map = HashMap::<String, toml::Value>::new();
+        let mut toml_map = BTreeMap::<String, toml::Value>::new();
         for (key, json_value) in obj.iter() {
           toml_map.insert(key.clone(), self.convert_json(json_value));
         }
-        toml::Table(toml_map)
+        toml::Value::Table(toml_map)
       }
     }
   }
 
-  pub fn convert
-    (&self, reader: &mut Reader) -> Result<toml::Value, json::BuilderError>  {
+  pub fn convert<R>
+    (&self, reader: &mut R) -> Result<toml::Value, json::BuilderError>
+    where R: Read {
     // First we must convert the reader into a JSON type.
-    let mut buf_reader = BufferedReader::new(reader);
+    let buf_reader = BufReader::new(reader);
     let char_iter = buf_reader.chars().map(|char_res| {
       // XXX: Is there some better way to handle this then failing the entire
       // task?
@@ -58,7 +61,8 @@ impl JsonConverter {
 #[cfg(test)]
 mod tests {
   use super::JsonConverter;
-  use std::io::fs::{File};
+  use std::fs::{File};
+  use std::path::Path;
   #[test]
   fn convert_i64() {
     println!("{}", 120i64);
@@ -70,7 +74,7 @@ mod tests {
     let path = Path::new("examples/short.json");
     let mut file = File::open(&path).unwrap();
 
-    let toml = converter.convert(&mut file);
-    println!("{}", toml);
+    let toml = converter.convert(&mut file).expect("toml convert");
+    println!("{}", toml.to_string());
   }
 }
